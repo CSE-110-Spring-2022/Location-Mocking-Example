@@ -6,7 +6,7 @@ This repository shows one approach to mocking location using `LiveData`.
 
 ## Example: Mocking Locations Along a Straight Line
 
-![Demo](images/demo_mock_route.gif)
+![Demo](images/demo.gif)
 
 ## Background
 
