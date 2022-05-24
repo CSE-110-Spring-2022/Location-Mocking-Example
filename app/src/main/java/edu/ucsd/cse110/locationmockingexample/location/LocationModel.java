@@ -6,7 +6,6 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.util.Log;
-import android.util.Pair;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
@@ -14,8 +13,6 @@ import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
-
-import com.google.common.math.DoubleMath;
 
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -43,11 +40,9 @@ public class LocationModel extends AndroidViewModel {
     }
 
     /**
-     *
      * @param locationManager the location manager to request updates from.
-     * @param provider the provider to use for location updates (usually GPS).
-     *
-     * @apiNote  This method should only be called after location permissions have been obtained.
+     * @param provider        the provider to use for location updates (usually GPS).
+     * @apiNote This method should only be called after location permissions have been obtained.
      * @implNote If a location provider source already exists, it is removed.
      */
     @SuppressLint("MissingPermission")
@@ -62,11 +57,9 @@ public class LocationModel extends AndroidViewModel {
         var locationListener = new LocationListener() {
             @Override
             public void onLocationChanged(@NonNull Location location) {
-                // When we get a new location, convert to a pair and update the live data.
-                providerSource.setValue(Coord.of(
-                    location.getLatitude(),
-                    location.getLongitude()
-                ));
+                var coord = Coord.fromLocation(location);
+                Log.i(TAG, String.format("Model received GPS location update: %s", coord));
+                providerSource.postValue(coord);
             }
         };
         // Register for updates.
@@ -93,8 +86,7 @@ public class LocationModel extends AndroidViewModel {
             int n = route.size();
             for (var coord : route) {
                 // Mock the location...
-
-                Log.i(TAG, String.format("Mocking route (%d / %d): %s", i++, n, coord));
+                Log.i(TAG, String.format("Model mocking route (%d / %d): %s", i++, n, coord));
                 mockLocation(coord);
 
                 // Sleep for a while...

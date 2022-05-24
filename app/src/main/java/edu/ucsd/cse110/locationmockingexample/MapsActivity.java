@@ -1,12 +1,12 @@
 package edu.ucsd.cse110.locationmockingexample;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.VisibleForTesting;
 import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.ViewModelProvider;
 
@@ -14,16 +14,17 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import edu.ucsd.cse110.locationmockingexample.databinding.ActivityMapsBinding;
+import edu.ucsd.cse110.locationmockingexample.location.Coord;
 import edu.ucsd.cse110.locationmockingexample.location.Coords;
 import edu.ucsd.cse110.locationmockingexample.location.LocationModel;
 import edu.ucsd.cse110.locationmockingexample.location.LocationPermissionChecker;
@@ -31,6 +32,8 @@ import edu.ucsd.cse110.locationmockingexample.location.LocationPermissionChecker
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
     private static final String TAG = "FOOBAR";
     public static final String EXTRA_USE_LOCATION_SERVICE = "use_location_updated";
+
+    private boolean useLocationService;
 
     private GoogleMap map;
     private ActivityMapsBinding binding;
@@ -41,8 +44,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        var useLocationService = getIntent()
-            .getBooleanExtra(EXTRA_USE_LOCATION_SERVICE, false);
+        useLocationService = getIntent().getBooleanExtra(EXTRA_USE_LOCATION_SERVICE, false);
 
         binding = ActivityMapsBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
@@ -96,8 +98,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             .interpolate(Coords.UCSD, Coords.ZOO, 12)
             .collect(Collectors.toList());
 
-        // Step through the route 1 second at a time.
-        model.mockRoute(route, 500, TimeUnit.MILLISECONDS);
+        if (!useLocationService) {
+            model.mockRoute(route, 500, TimeUnit.MILLISECONDS);
+        }
     }
 
     private void initializeMap(GoogleMap map) {
@@ -128,5 +131,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         // Move the camera and zoom to the right level.
         map.moveCamera(CameraUpdateFactory.newLatLng(cameraPosition));
         map.moveCamera(CameraUpdateFactory.zoomTo(11.5f));
+    }
+
+    @VisibleForTesting
+    public void mockLocation(Coord coords) {
+        model.mockLocation(coords);
+    }
+
+    @VisibleForTesting
+    public Future<?> mockRoute(List<Coord> route, long delay, TimeUnit unit) {
+        return model.mockRoute(route, delay, unit);
     }
 }
