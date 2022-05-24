@@ -113,8 +113,6 @@ with an additional extra passed in via intent to control whether real location u
 this.useLocationService = getIntent().getBooleanExtra(EXTRA_USE_LOCATION_SERVICE, false);
 ```
 
-**Real location updates are disabled by default. Instead, the app will step through
-
 If the `EXTRA_USE_LOCATION_SERVICE` extra is set to `false`, then only mocked location updates will be shown, and 
 location permissions will not be requested. This is appropriate for testing purposes.
 
